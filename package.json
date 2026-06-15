@@ -1,0 +1,50 @@
+{
+  "name": "go-insurance-checker",
+  "version": "1.0.0",
+  "description": "MCP server checking active Bulgarian motor third-party liability insurance (Гражданска отговорност / GO).",
+  "type": "module",
+  "bin": {
+    "go-insurance-checker": "build/index.js"
+  },
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/index.js",
+    "dev": "tsc --watch",
+    "inspect": "npm run build && npx @modelcontextprotocol/inspector node build/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "insurance",
+    "bulgaria",
+    "grazhdanska-otgovornost"
+  ],
+  "license": "MIT",
+  "author": "Plamen Markov <plamen326@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/plamen911/go-insurance-checker.git"
+  },
+  "homepage": "https://github.com/plamen911/go-insurance-checker#readme",
+  "bugs": {
+    "url": "https://github.com/plamen911/go-insurance-checker/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0",
+    "@types/node": "^22.0.0"
+  }
+}
