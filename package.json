@@ -1,6 +1,6 @@
 {
   "name": "go-insurance-checker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server checking active Bulgarian motor third-party liability insurance (Гражданска отговорност / GO).",
   "type": "module",
   "bin": {

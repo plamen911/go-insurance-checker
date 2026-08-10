@@ -12,6 +12,7 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { createRequire } from "node:module";
 import { z } from "zod";
 
 // ---------------------------------------------------------------------------
@@ -27,6 +28,11 @@ const API_URL =
 
 // httpx.AsyncClient(timeout=30) in the original.
 const REQUEST_TIMEOUT_MS = 30_000;
+
+// The compiled entry point is build/index.js, so package.json is always one
+// directory up — no second copy of the version number to keep in sync.
+const require = createRequire(import.meta.url);
+const { version: VERSION } = require("../package.json") as { version: string };
 
 // ---------------------------------------------------------------------------
 // Upstream response shape — the fields format_response_bg() reads
@@ -118,22 +124,56 @@ function formatResponseBg(data: UpstreamResponse): string {
   return lines.join("\n");
 }
 
-/** Today's date as ISO YYYY-MM-DD in local time — matches date.today().isoformat(). */
+/**
+ * Today's date as ISO YYYY-MM-DD in Europe/Sofia.
+ *
+ * The upstream API answers in Bulgarian local time, so the default check_date
+ * must follow Sofia (UTC+2/+3) rather than the host clock — otherwise a server
+ * running under UTC sends yesterday's date during the early-morning hours.
+ */
 function todayIso(): string {
-  const d = new Date();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${d.getFullYear()}-${mm}-${dd}`;
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Sofia",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((p) => p.type === type)?.value ?? "";
+
+  return `${part("year")}-${part("month")}-${part("day")}`;
 }
 
 // ---------------------------------------------------------------------------
 // Server
 // ---------------------------------------------------------------------------
 
-const server = new McpServer({
-  name: "go-insurance-checker",
-  version: "1.0.0",
-});
+const server = new McpServer(
+  {
+    name: "go-insurance-checker",
+    version: VERSION,
+  },
+  {
+    // Sent as `instructions` in the initialize response — this is what clients
+    // such as Claude Desktop show as the server-level description.
+    instructions: [
+      'Този сървър проверява дали български автомобил има активна застраховка ' +
+        '„Гражданска отговорност" (ГО) по регистрационен номер.',
+      "",
+      "Данните се извличат в реално време от публичното API на zastrahovaite.com.",
+      "",
+      'Използвай инструмента check_active_go, когато потребителят попита дали за ' +
+        'даден регистрационен номер (например „CB8495HM") има валидна ГО. ' +
+        "Незадължителният параметър check_date (формат YYYY-MM-DD) позволява " +
+        "проверка към минала или бъдеща дата; по подразбиране се използва " +
+        "днешната дата за часова зона Europe/Sofia.",
+      "",
+      "Резултатът е на български език и при активна полица включва " +
+        "застраховател, срок на валидност и номер на полицата.",
+    ].join("\n"),
+  },
+);
 
 server.registerTool(
   "check_active_go",
