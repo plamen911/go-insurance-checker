@@ -4,6 +4,9 @@ An [MCP](https://modelcontextprotocol.io) server that checks whether a Bulgarian
 vehicle has active mandatory motor third-party liability insurance
 ("Гражданска отговорност" / **GO**).
 
+The check behind it automates the lookup in the official register of the Guarantee Fund.
+See the [case study](docs/case-study.md).
+
 ## Usage (no install)
 
 Add it to your MCP client config and let `npx` fetch it on first run:
